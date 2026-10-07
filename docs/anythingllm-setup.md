@@ -1,0 +1,42 @@
+# Running the knowledge service (AnythingLLM)
+
+Project 1 is [AnythingLLM](https://github.com/Mintplex-Labs/anything-llm) — a production-grade open-source RAG app. You **run** it; you don't modify it. Your agent (Project 2) calls its API as the `search_knowledge` tool.
+
+## 1. Start it (Docker)
+
+```bash
+docker run -d -p 3001:3001 \
+  -v anythingllm_storage:/app/server/storage \
+  --name anythingllm mintplexlabs/anythingllm
+```
+
+Open http://localhost:3001 and complete the first-run setup. (Prefer a desktop app? AnythingLLM also ships one — see their repo. Docker is easiest for a shared, reproducible setup.)
+
+## 2. Point it at a model
+
+In **Settings → LLM Preference**, choose **Ollama** and the model you pulled (e.g. `llama3.1:8b`). This is the model AnythingLLM uses to *answer* from documents — separate from your agent's reasoning model. Make sure `ollama serve` is running.
+
+## 3. Create a workspace and load documents
+
+1. Create a workspace named to match `ANYTHINGLLM_WORKSPACE` in your `.env` (e.g. `apprentice-kb`).
+2. Upload the files in [`../sample-data/`](../sample-data) (or your own corpus) and "Save & Embed" them.
+3. Ask a question in the AnythingLLM UI to confirm retrieval works before you wire up the agent.
+
+## 4. Create a developer API key
+
+In **Settings → API Keys**, generate a key and paste it into `.env` as `ANYTHINGLLM_API_KEY`.
+
+## 5. Test the API from the command line
+
+The exact routes are in AnythingLLM's API docs (Settings has a link to the built-in Swagger/API reference). A workspace chat call looks roughly like:
+
+```bash
+curl -X POST http://localhost:3001/api/v1/workspace/apprentice-kb/chat \
+  -H "Authorization: Bearer $ANYTHINGLLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "How much does Nimbus Pro cost?", "mode": "query"}'
+```
+
+You should get back an answer plus source references. **Check the live API reference for the exact path, request body, and response shape** — wrap whatever you find in your `search_knowledge(query)` function so the rest of your agent doesn't care about the details.
+
+> Treat the response shape as something to *verify*, not assume — read the actual JSON once and build your parser around it.
