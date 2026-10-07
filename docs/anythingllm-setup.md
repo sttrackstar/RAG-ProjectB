@@ -6,6 +6,7 @@ Project 1 is [AnythingLLM](https://github.com/Mintplex-Labs/anything-llm) — a 
 
 ```bash
 docker run -d -p 3001:3001 \
+  -e STORAGE_DIR=/app/server/storage \
   -v anythingllm_storage:/app/server/storage \
   --name anythingllm mintplexlabs/anythingllm
 ```
@@ -16,11 +17,13 @@ Open http://localhost:3001 and complete the first-run setup. (Prefer a desktop a
 
 In **Settings → LLM Preference**, choose **Ollama** and the model you pulled (e.g. `llama3.1:8b`). This is the model AnythingLLM uses to *answer* from documents — separate from your agent's reasoning model. Make sure `ollama serve` is running.
 
+If `llama3.1:8b` cannot run because of local memory limitations, `llama3.2:1b` can be used for local RAG setup and testing. The smaller model may not reliably support agent/tool calling, but it is sufficient for verifying AnythingLLM document retrieval in Query mode.
+
 ## 3. Create a workspace and load documents
 
 1. Create a workspace named to match `ANYTHINGLLM_WORKSPACE` in your `.env` (e.g. `apprentice-kb`).
 2. Upload the files in [`../sample-data/`](../sample-data) (or your own corpus) and "Save & Embed" them.
-3. Ask a question in the AnythingLLM UI to confirm retrieval works before you wire up the agent.
+3. Set the workspace chat mode to Query, then ask a question in the AnythingLLM UI to confirm document retrieval works before wiring up the agent.    Agent mode may require reliable native tool-calling support from the selected model.
 
 ## 4. Create a developer API key
 
@@ -31,10 +34,10 @@ In **Settings → API Keys**, generate a key and paste it into `.env` as `ANYTHI
 The exact routes are in AnythingLLM's API docs (Settings has a link to the built-in Swagger/API reference). A workspace chat call looks roughly like:
 
 ```bash
-curl -X POST http://localhost:3001/api/v1/workspace/apprentice-kb/chat \
+curl -X POST "$ANYTHINGLLM_BASE_URL/api/v1/workspace/$ANYTHINGLLM_WORKSPACE/chat" \
   -H "Authorization: Bearer $ANYTHINGLLM_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"message": "How much does Nimbus Pro cost?", "mode": "query"}'
+  -d '{"message":"How much does Nimbus Pro cost?","mode":"query"}'
 ```
 
 You should get back an answer plus source references. **Check the live API reference for the exact path, request body, and response shape** — wrap whatever you find in your `search_knowledge(query)` function so the rest of your agent doesn't care about the details.
