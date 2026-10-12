@@ -112,6 +112,7 @@ Before anyone clones anything, **one teammate creates the repository your team w
 #    Runs AnythingLLM at http://localhost:3001. Load the docs in sample-data/,
 #    then create a developer API key inside its settings.
 docker run -d -p 3001:3001 \
+  -e STORAGE_DIR=/app/server/storage \
   -v anythingllm_storage:/app/server/storage \
   --name anythingllm mintplexlabs/anythingllm
 
