@@ -88,3 +88,56 @@ button:disabled {
 .error {
   color: #f87171;
 }
+
+.trace {
+  margin-top: 32px;
+  text-align: left;
+}
+
+.trace ol {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.step {
+  padding: 16px;
+  border: 1px solid #334155;
+  border-left: 4px solid #38bdf8;
+  border-radius: 10px;
+  background: #0f172a;
+}
+
+.step-needs_confirmation {
+  border-left-color: #f59e0b;
+}
+
+.step-error {
+  border-left-color: #f87171;
+  color: #f87171;
+}
+
+.step-title {
+  font-weight: 600;
+  color: #f8fafc;
+  margin-bottom: 8px;
+}
+
+.step-args {
+  display: block;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.step-meta {
+  margin-top: 8px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.step-links a {
+  color: #38bdf8;
+}
