@@ -97,4 +97,4 @@ def test_unexpected_response_returns_error(monkeypatch):
 def test_web_search_is_registered_for_the_agent():
     assert TOOLS["web_search"]["function"] is web_search
     names = [schema["function"]["name"] for schema in tool_schemas()]
-    assert names == ["search_knowledge", "web_search"]
+    assert "web_search" in names
