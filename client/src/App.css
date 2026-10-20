@@ -1,0 +1,90 @@
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 70px 24px;
+}
+
+.app h1 {
+  font-size: 3rem;
+  margin-bottom: 8px;
+  color: #f8fafc;
+}
+
+.app > p {
+  color: #94a3b8;
+  margin-bottom: 32px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 18px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: #1e293b;
+  color: #f8fafc;
+  font: inherit;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: 2px solid #38bdf8;
+}
+
+button {
+  align-self: flex-start;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  background: #0284c7;
+  color: white;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: #0369a1;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.result {
+  margin-top: 36px;
+  padding: 24px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: #1e293b;
+}
+
+.result h2 {
+  margin-top: 0;
+}
+
+.result h3 {
+  margin-top: 24px;
+  color: #94a3b8;
+}
+
+.result li {
+  margin-bottom: 8px;
+}
+
+.error {
+  color: #f87171;
+}
