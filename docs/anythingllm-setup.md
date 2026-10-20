@@ -17,6 +17,8 @@ Open http://localhost:3001 and complete the first-run setup. (Prefer a desktop a
 
 In **Settings → LLM Preference**, choose **Ollama** and the model you pulled (e.g. `llama3.1:8b`). This is the model AnythingLLM uses to *answer* from documents — separate from your agent's reasoning model. Make sure `ollama serve` is running.
 
+Under **Show advanced settings**, set **Model context window** to `4096` (to match the agent) and **Ollama Keep Alive** to 1 hour. If AnythingLLM uses a different context window than the agent, Ollama reloads the model every time the two take turns, and `search_knowledge` times out.
+
 If `llama3.1:8b` cannot run because of local memory limitations, `llama3.2:1b` can be used for local RAG setup and testing. The smaller model may not reliably support agent/tool calling, but it is sufficient for verifying AnythingLLM document retrieval in Query mode.
 
 ## 3. Create a workspace and load documents
