@@ -100,32 +100,69 @@ def test_model_error_returns_graceful_answer(monkeypatch):
     assert result["steps"] == [{"type": "error", "error": "Model timed out after 120s"}]
 
 
-def test_confirmation_required_tool_pauses_instead_of_running(monkeypatch):
+@pytest.fixture
+def fake_save_note(monkeypatch):
+    """A save_note that records each call, plus an empty pending-action store."""
     saved = []
     monkeypatch.setitem(agent.TOOLS, "save_note", {
         "function": lambda title, content: saved.append(title) or {"saved": True, "id": 1, "title": title},
         "requires_confirmation": True,
         "schema": {"type": "function", "function": {"name": "save_note"}},
     })
+    monkeypatch.setattr(agent, "PENDING_ACTIONS", {})
+    return saved
+
+
+def pause_for_note(monkeypatch):
+    """Run the agent until it pauses on save_note and return the pending action."""
+    scripted_model(monkeypatch, [tool_call("save_note", {"title": "T", "content": "C"})])
+    return agent.run_agent("Save a note")["pending_action"]
+
+
+def test_confirmation_required_tool_pauses_instead_of_running(monkeypatch, fake_save_note):
     scripted_model(monkeypatch, [tool_call("save_note", {"title": "T", "content": "C"})])
 
     result = agent.run_agent("Save a note")
 
-    assert saved == []  # nothing ran
-    assert result["pending_action"] == {"tool": "save_note", "arguments": {"title": "T", "content": "C"}}
-    assert result["steps"] == [{"type": "needs_confirmation", "tool": "save_note", "arguments": {"title": "T", "content": "C"}}]
+    assert fake_save_note == []  # nothing ran
+    pending = result["pending_action"]
+    assert pending["tool"] == "save_note"
+    assert pending["arguments"] == {"title": "T", "content": "C"}
+    assert agent.PENDING_ACTIONS == {pending["id"]: {"tool": "save_note", "arguments": {"title": "T", "content": "C"}}}
+    assert result["steps"] == [{"type": "needs_confirmation", **pending}]
     assert "confirm" in result["answer"].lower()
 
 
-def test_confirm_action_runs_the_pending_tool(monkeypatch):
-    saved = []
-    monkeypatch.setitem(agent.TOOLS, "save_note", {
-        "function": lambda title, content: saved.append(title) or {"saved": True, "id": 1, "title": title},
-        "requires_confirmation": True,
-        "schema": {"type": "function", "function": {"name": "save_note"}},
-    })
+def test_confirm_action_runs_the_pending_tool(monkeypatch, fake_save_note):
+    pending = pause_for_note(monkeypatch)
 
-    result = agent.confirm_action({"tool": "save_note", "arguments": {"title": "T", "content": "C"}})
+    result = agent.confirm_action(pending["id"])
 
-    assert saved == ["T"]
+    assert fake_save_note == ["T"]
     assert result == {"saved": True, "id": 1, "title": "T"}
+    assert agent.PENDING_ACTIONS == {}
+
+
+def test_confirm_action_runs_only_once(monkeypatch, fake_save_note):
+    pending = pause_for_note(monkeypatch)
+    agent.confirm_action(pending["id"])
+
+    second = agent.confirm_action(pending["id"])
+
+    assert "error" in second
+    assert fake_save_note == ["T"]  # saved once, not twice
+
+
+def test_confirm_action_rejects_unknown_id(fake_save_note):
+    result = agent.confirm_action("made-up-id")
+
+    assert "error" in result
+    assert fake_save_note == []
+
+
+def test_cancel_action_discards_without_running(monkeypatch, fake_save_note):
+    pending = pause_for_note(monkeypatch)
+
+    assert agent.cancel_action(pending["id"]) == {"cancelled": True}
+    assert "error" in agent.confirm_action(pending["id"])
+    assert fake_save_note == []
