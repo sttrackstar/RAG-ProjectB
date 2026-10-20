@@ -1,5 +1,6 @@
 from tools.search_knowledge import search_knowledge
 from tools.web_search import web_search
+from tools.save_note import save_note
 
 # Every tool the agent can use. "schema" is what the model sees;
 # "function" is what our code runs when the model asks for it.
@@ -44,6 +45,29 @@ TOOLS = {
                         "query": {"type": "string", "description": "Search terms, e.g. 'vector database'"}
                     },
                     "required": ["query"],
+                },
+            },
+        },
+    },
+    "save_note": {
+        "function": save_note,
+        "requires_confirmation": True,
+        "schema": {
+            "type": "function",
+            "function": {
+                "name": "save_note",
+                "description": (
+                    "Save a research note for the user. Only use this when the user "
+                    "explicitly asks to save or remember something. The user will be "
+                    "asked to confirm before the note is saved."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "title": {"type": "string", "description": "Short title for the note"},
+                        "content": {"type": "string", "description": "The note text, including sources"},
+                    },
+                    "required": ["title", "content"],
                 },
             },
         },
