@@ -1,6 +1,7 @@
 
 import { useState } from 'react'
 import './App.css'
+import TracePanel from './TracePanel'
 
 function App() {
   const [question, setQuestion] = useState('')
@@ -8,6 +9,7 @@ function App() {
   const [sources, setSources] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [steps, setSteps] = useState([])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -17,6 +19,7 @@ function App() {
     setError('')
     setAnswer('')
     setSources([])
+    setSteps([])
 
     try {
       const response = await fetch('/api/agent', {
@@ -33,10 +36,14 @@ function App() {
 
       setAnswer(data.answer || 'No answer returned.')
 
-      const foundSources = (data.steps || [])
-        .flatMap(step => step.result?.sources || [])
+      const responseSteps = data.steps || []
+      setSteps(responseSteps)
 
-      setSources([...new Set(foundSources)])
+      const searched = responseSteps.flatMap(step => [
+        ...(step.result?.sources || []),
+        ...(step.result?.results || []).map(page => page.title),
+      ])
+      setSources([...new Set(searched)])
     } catch (err) {
       setError(err.message || 'Unable to contact the agent.')
     } finally {
@@ -71,7 +78,7 @@ function App() {
 
           {sources.length > 0 && (
             <>
-              <h3>Sources</h3>
+              <h3>Searched</h3>
               <ul>
                 {sources.map(source => (
                   <li key={source}>{source}</li>
@@ -79,6 +86,8 @@ function App() {
               </ul>
             </>
           )}
+
+          <TracePanel steps={steps} />
         </section>
       )}
     </main>
