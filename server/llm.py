@@ -4,6 +4,27 @@ import os
 import requests
 
 
+def warm_up() -> dict:
+    """Load the agent model into memory without asking it anything.
+
+    Called when a user starts typing, so the model is ready by the time they
+    ask (a cold start can take 20-50 seconds; a loaded model about 6).
+    """
+    base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+    model = os.environ.get("AGENT_MODEL", "llama3.1:8b")
+    keep_alive = os.environ.get("OLLAMA_KEEP_ALIVE", "1h")
+    timeout = float(os.environ.get("LLM_TIMEOUT_SECONDS", "120"))
+
+    try:
+        response = requests.post(
+            f"{base_url}/api/generate", json={"model": model, "keep_alive": keep_alive}, timeout=timeout
+        )
+        response.raise_for_status()
+    except requests.RequestException:
+        return {"warm": False, "error": "Could not load the model - is Ollama running?"}
+    return {"warm": True}
+
+
 def generate(messages: list, tools: list | None = None) -> dict:
     """Ask the agent model what to do next.
 
@@ -16,8 +37,10 @@ def generate(messages: list, tools: list | None = None) -> dict:
     base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
     model = os.environ.get("AGENT_MODEL", "llama3.1:8b")
     timeout = float(os.environ.get("LLM_TIMEOUT_SECONDS", "120"))
+    keep_alive = os.environ.get("OLLAMA_KEEP_ALIVE", "1h")
 
-    payload = {"model": model, "messages": messages, "stream": False}
+    # keep_alive stops Ollama unloading the model after its default 5 idle minutes.
+    payload = {"model": model, "messages": messages, "stream": False, "keep_alive": keep_alive}
     if tools:
         payload["tools"] = tools
 

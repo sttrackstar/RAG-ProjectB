@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from llm import generate
+from llm import generate, warm_up
 
 
 class FakeResponse:
@@ -35,6 +35,7 @@ def fake_env(monkeypatch):
     monkeypatch.setenv("OLLAMA_BASE_URL", "http://fake-ollama:11434")
     monkeypatch.setenv("AGENT_MODEL", "test-model")
     monkeypatch.setenv("LLM_TIMEOUT_SECONDS", "30")
+    monkeypatch.setenv("OLLAMA_KEEP_ALIVE", "1h")
 
 
 def test_returns_tool_calls_and_sends_correct_request(monkeypatch):
@@ -57,7 +58,9 @@ def test_returns_tool_calls_and_sends_correct_request(monkeypatch):
     assert result["tool_calls"] == [{"name": "search_knowledge", "arguments": {"query": "Nimbus Pro cost"}}]
     assert result["message"] == reply
     assert calls["url"] == "http://fake-ollama:11434/api/chat"
-    assert calls["json"] == {"model": "test-model", "messages": USER_MESSAGES, "stream": False, "tools": [SEARCH_TOOL]}
+    assert calls["json"] == {
+        "model": "test-model", "messages": USER_MESSAGES, "stream": False, "keep_alive": "1h", "tools": [SEARCH_TOOL],
+    }
     assert calls["timeout"] == 30.0
 
 
@@ -118,3 +121,30 @@ def test_unexpected_response_returns_error(monkeypatch):
     monkeypatch.setattr(requests, "post", lambda *a, **k: FakeResponse(json_data={"oops": True}))
 
     assert generate(USER_MESSAGES)["type"] == "error"
+
+
+def test_warm_up_loads_the_model_without_a_prompt(monkeypatch):
+    calls = {}
+
+    def fake_post(url, json, timeout):
+        calls.update(url=url, json=json, timeout=timeout)
+        return FakeResponse(json_data={"done": True})
+
+    monkeypatch.setattr(requests, "post", fake_post)
+
+    assert warm_up() == {"warm": True}
+    assert calls["url"] == "http://fake-ollama:11434/api/generate"
+    assert calls["json"] == {"model": "test-model", "keep_alive": "1h"}
+    assert calls["timeout"] == 30.0
+
+
+def test_warm_up_reports_failure_without_crashing(monkeypatch):
+    def fake_post(*args, **kwargs):
+        raise requests.ConnectionError()
+
+    monkeypatch.setattr(requests, "post", fake_post)
+
+    result = warm_up()
+
+    assert result["warm"] is False
+    assert "Ollama" in result["error"]

@@ -45,3 +45,15 @@ def test_agent_endpoint_rejects_empty_question():
     assert response.get_json() == {
         "error": "Question is required"
     }
+
+
+def test_warmup_endpoint_starts_warm_up_in_background():
+    with patch("app.threading.Thread") as mock_thread:
+        client = app.test_client()
+
+        response = client.post("/api/warmup")
+
+    assert response.status_code == 202
+    mock_thread.assert_called_once()
+    assert mock_thread.call_args.kwargs["target"].__name__ == "warm_up"
+    mock_thread.return_value.start.assert_called_once()
