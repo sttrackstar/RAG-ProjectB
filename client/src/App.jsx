@@ -1,5 +1,5 @@
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import './App.css'
 import TracePanel from './TracePanel'
 
@@ -10,6 +10,14 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [steps, setSteps] = useState([])
+  const warmedUp = useRef(false)
+
+  // Load the model as soon as the user starts typing, so it's ready when they ask.
+  function warmUpModel() {
+    if (warmedUp.current) return
+    warmedUp.current = true
+    fetch('/api/warmup', { method: 'POST' }).catch(() => {})
+  }
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -60,6 +68,7 @@ function App() {
         <textarea
           value={question}
           onChange={event => setQuestion(event.target.value)}
+          onFocus={warmUpModel}
           placeholder="Ask a question..."
           rows={4}
         />

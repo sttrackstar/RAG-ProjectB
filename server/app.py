@@ -1,9 +1,11 @@
+import threading
 from pathlib import Path
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 
 from agent import run_agent
+from llm import warm_up
 
 # Load settings from the .env file in the repo root(one folder up from server)
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
@@ -31,6 +33,13 @@ def create_app():
         result = run_agent(question.strip())
 
         return jsonify(result), 200
+
+    @app.route("/api/warmup", methods=["POST"])
+    def warmup():
+        # Load the model in the background and reply right away, so the
+        # browser never waits for it.
+        threading.Thread(target=warm_up, daemon=True).start()
+        return jsonify({"status": "warming up"}), 202
 
     return app
 
