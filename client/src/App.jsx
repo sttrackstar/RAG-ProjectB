@@ -1,6 +1,7 @@
 
 import { useRef, useState } from 'react'
 import './App.css'
+import LoadingState from './LoadingState'
 import TracePanel from './TracePanel'
 
 function App() {
@@ -79,6 +80,8 @@ function App() {
       </form>
 
       {error && <p className="error">{error}</p>}
+
+      {loading && <LoadingState />}
 
       {answer && (
         <section className="result">

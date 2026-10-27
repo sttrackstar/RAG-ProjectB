@@ -141,3 +141,56 @@ button:disabled {
 .step-links a {
   color: #38bdf8;
 }
+
+.loading {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loading-status {
+  color: #38bdf8;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.skeleton {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #273449 25%, #3b4a63 50%, #273449 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-heading {
+  width: 30%;
+  height: 24px;
+}
+
+.skeleton-line {
+  height: 16px;
+}
+
+.skeleton-line-short {
+  width: 65%;
+}
+
+.skeleton-step {
+  height: 64px;
+  margin-top: 8px;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
