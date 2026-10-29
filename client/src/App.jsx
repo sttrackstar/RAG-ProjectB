@@ -82,23 +82,45 @@ function App() {
 
       {answer && (
         <section className="result">
-          <h2>Answer</h2>
-          <p>{answer}</p>
 
-          {sources.length > 0 && (
-            <>
-              <h3>Searched</h3>
-              <ul>
-                {sources.map(source => (
-                  <li key={source}>{source}</li>
-                ))}
-              </ul>
-            </>
-          )}
+          {/* AI-generated answer */}
+        <div className="answer-card">
+        <div className="section-heading">
+        <span className="section-icon">✦</span>
+        <h2>AI Answer</h2>
+        </div>
 
-          <TracePanel steps={steps} />
-        </section>
-      )}
+        <p className="answer-text">{answer}</p>
+        </div>
+
+      {/* Documents and pages searched */}
+      {sources.length > 0 && (
+      <div className="sources-card">
+        <div className="section-heading">
+          <span className="section-icon">📚</span>
+          <h2>Sources Searched</h2>
+          <span className="source-count">{sources.length}</span>
+        </div>
+
+        <ul className="sources-list">
+          {sources.map(source => (
+            <li className="source-item" key={source}>
+              <span className="source-icon">📄</span>
+              <span>{source}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    {/* Existing agent trace */}
+    <TracePanel steps={steps} />
+
+  </section>
+)}
+
+
+      
     </main>
   )
 }
