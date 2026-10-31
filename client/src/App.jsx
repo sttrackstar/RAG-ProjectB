@@ -11,6 +11,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [steps, setSteps] = useState([])
+  const [run, setRun] = useState(null)
   const warmedUp = useRef(false)
 
   // Load the model as soon as the user starts typing, so it's ready when they ask.
@@ -29,6 +30,7 @@ function App() {
     setAnswer('')
     setSources([])
     setSteps([])
+    setRun(null)
 
     try {
       const response = await fetch('/api/agent', {
@@ -47,6 +49,7 @@ function App() {
 
       const responseSteps = data.steps || []
       setSteps(responseSteps)
+      if (data.run_id) setRun({ id: data.run_id, durationMs: data.duration_ms })
 
       const searched = responseSteps.flatMap(step => [
         ...(step.result?.sources || []),
@@ -100,6 +103,13 @@ function App() {
           )}
 
           <TracePanel steps={steps} />
+
+          {run && (
+            <p className="run-meta">
+              Answered in {(run.durationMs / 1000).toFixed(1)}s ·{' '}
+              <a href={`/api/runs/${run.id}`} target="_blank" rel="noreferrer">View full log</a>
+            </p>
+          )}
         </section>
       )}
     </main>

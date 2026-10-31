@@ -61,7 +61,10 @@ def test_final_answer_without_tools(monkeypatch):
 
     result = agent.run_agent("Say hello")
 
-    assert result == {"answer": "Hello!", "steps": []}
+    assert result["answer"] == "Hello!"
+    assert result["steps"] == []
+    assert len(result["run_id"]) == 32
+    assert result["duration_ms"] >= 0
 
 
 def test_loop_stops_at_max_steps(monkeypatch):

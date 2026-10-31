@@ -142,6 +142,17 @@ button:disabled {
   color: #38bdf8;
 }
 
+.run-meta {
+  margin-top: 20px;
+  text-align: left;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.run-meta a {
+  color: #38bdf8;
+}
+
 .loading {
   text-align: left;
   display: flex;
