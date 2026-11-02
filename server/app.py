@@ -4,7 +4,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 
-from agent import run_agent
+import agent
+from agent import cancel_action, confirm_action, run_agent
 from llm import warm_up
 from observability import get_run, list_runs
 
@@ -53,6 +54,21 @@ def create_app():
         if not events:
             return jsonify({"error": "No run with that id"}), 404
         return jsonify({"run_id": run_id, "events": events})
+
+    # Confirmation guardrail: a consequential action (like save_note) only runs
+    # when the user approves the pending action the agent paused on.
+    @app.route("/api/actions/<action_id>/confirm", methods=["POST"])
+    def confirm(action_id):
+        if action_id not in agent.PENDING_ACTIONS:
+            return jsonify({"error": "No pending action with that id. It may have already run or been cancelled."}), 404
+        return jsonify({"status": "confirmed", "result": confirm_action(action_id)}), 200
+
+    @app.route("/api/actions/<action_id>/cancel", methods=["POST"])
+    def cancel(action_id):
+        if action_id not in agent.PENDING_ACTIONS:
+            return jsonify({"error": "No pending action with that id."}), 404
+        cancel_action(action_id)
+        return jsonify({"status": "cancelled"}), 200
 
     return app
 

@@ -142,6 +142,72 @@ button:disabled {
   color: #38bdf8;
 }
 
+.confirm-card {
+  margin-top: 16px;
+  padding: 20px;
+  text-align: left;
+  border: 1px solid #334155;
+  border-left: 4px solid #f59e0b;
+  border-radius: 10px;
+  background: #0f172a;
+}
+
+.confirm-card h3 {
+  margin: 0 0 8px;
+  color: #f59e0b;
+}
+
+.confirm-args {
+  margin: 12px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.confirm-args dt {
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.confirm-args dd {
+  margin: 0;
+  color: #f8fafc;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.button-secondary {
+  background: transparent;
+  border: 1px solid #475569;
+  color: #f8fafc;
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: #1e293b;
+}
+
+.confirm-outcome {
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.confirm-confirmed {
+  border-left-color: #22c55e;
+}
+
+.confirm-cancelled {
+  border-left-color: #64748b;
+}
+
+.confirm-error {
+  border-left-color: #f87171;
+}
+
 .run-meta {
   margin-top: 20px;
   text-align: left;
