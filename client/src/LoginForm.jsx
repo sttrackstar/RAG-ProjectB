@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 function LoginForm({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -11,7 +11,7 @@ function LoginForm({ onLogin }) {
     setIsLoading(true);
     setErrors([]);
 
-    fetch("/login", {
+    fetch("/api/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

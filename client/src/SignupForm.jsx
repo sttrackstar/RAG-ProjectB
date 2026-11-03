@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 function SignupForm({ onSignup }) {
   const [username, setUsername] = useState("");
@@ -19,7 +19,7 @@ function SignupForm({ onSignup }) {
 
     setIsLoading(true);
 
-    fetch("/signup", {
+    fetch("/api/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -61,6 +61,7 @@ function SignupForm({ onSignup }) {
 
         <input
           type="text"
+          id="signup-username"
           autoComplete="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -75,6 +76,7 @@ function SignupForm({ onSignup }) {
 
         <input
           type="password"
+          id="signup-password"
           autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -89,6 +91,7 @@ function SignupForm({ onSignup }) {
 
         <input
           type="password"
+          id="password-confirmation"
           autoComplete="new-password"
           value={passwordConfirmation}
           onChange={(e) =>

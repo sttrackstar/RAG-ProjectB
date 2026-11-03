@@ -1,10 +1,8 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import SignupForm from "../components/SignupForm";
-import "../styles/Signup.css";
-function Signup({ onSignup }) {
+import SignupForm from "./SignupForm";
+
+function Signup({ onSignup, onSwitch }) {
   return (
-    <main>
+    <main className="app auth">
       <h1>Research Aide</h1>
       <h2>Create Account</h2>
 
@@ -12,7 +10,7 @@ function Signup({ onSignup }) {
 
       <p>
         Already have an account?{" "}
-        <Link to="/login">Login</Link>
+        <button type="button" className="link-button" onClick={onSwitch}>Login</button>
       </p>
     </main>
   );

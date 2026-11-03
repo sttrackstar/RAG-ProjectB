@@ -142,6 +142,86 @@ button:disabled {
   color: #38bdf8;
 }
 
+.app-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  color: #94a3b8;
+}
+
+.app-header button {
+  align-self: center;
+  padding: 6px 14px;
+}
+
+.auth form div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.auth label {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.auth input {
+  padding: 12px;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #1e293b;
+  color: #f8fafc;
+  font: inherit;
+}
+
+.auth input:focus {
+  outline: 2px solid #38bdf8;
+}
+
+.auth form p {
+  color: #f87171;
+}
+
+.link-button {
+  padding: 0;
+  background: none;
+  color: #38bdf8;
+  text-decoration: underline;
+  font-weight: 400;
+}
+
+.link-button:hover:not(:disabled) {
+  background: none;
+}
+
+.history {
+  margin-top: 36px;
+  text-align: left;
+}
+
+.history ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-item {
+  width: 100%;
+  text-align: left;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  font-weight: 400;
+}
+
+.history-item:hover:not(:disabled) {
+  background: #273449;
+}
+
 .confirm-card {
   margin-top: 16px;
   padding: 20px;

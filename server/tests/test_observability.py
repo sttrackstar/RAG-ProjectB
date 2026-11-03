@@ -4,7 +4,6 @@ import pytest
 
 import agent
 import observability
-from app import app
 
 
 def read_log(path):
@@ -85,12 +84,11 @@ def test_logging_failure_never_breaks_the_caller(monkeypatch, tmp_path):
     assert ok() == {"ok": True}
 
 
-def test_runs_endpoints(monkeypatch):
+def test_runs_endpoints(monkeypatch, client):
     monkeypatch.setattr(agent, "generate", lambda messages, tools: {
         "type": "final", "content": "Hi", "message": {"role": "assistant", "content": "Hi"},
     })
-    run = agent.run_agent("hello")
-    client = app.test_client()
+    run = client.post("/api/agent", json={"question": "hello"}).get_json()
 
     listing = client.get("/api/runs")
     detail = client.get(f"/api/runs/{run['run_id']}")

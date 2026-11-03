@@ -25,14 +25,14 @@ SYSTEM_PROMPT = (
 PENDING_ACTIONS = {}
 
 
-def run_agent(goal: str) -> dict:
+def run_agent(goal: str, user_id=None) -> dict:
     """Run the agent loop for one goal, logging the run for observability.
 
     Returns {"answer": str, "steps": [...], "run_id": str, "duration_ms": int}
     where each step records one tool call (tool, arguments, result) or an error,
     for the trace panel. The run's full log is available by its run_id.
     """
-    run_id = start_run(goal)
+    run_id = start_run(goal, user_id)
     started = time.perf_counter()
     result = _run_loop(goal)
     duration_ms = (time.perf_counter() - started) * 1000

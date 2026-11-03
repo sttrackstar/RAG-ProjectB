@@ -36,10 +36,10 @@ def log_event(event: dict) -> None:
         pass  # logging must never break the agent
 
 
-def start_run(goal: str) -> str:
+def start_run(goal: str, user_id=None) -> str:
     run_id = uuid.uuid4().hex
     _current_run.set(run_id)
-    log_event({"type": "run_start", "goal": goal})
+    log_event({"type": "run_start", "goal": goal, "user_id": user_id})
     return run_id
 
 
@@ -95,8 +95,8 @@ def _read_events() -> list:
     return events
 
 
-def list_runs(limit: int = 20) -> list:
-    """Summaries of the most recent runs, newest first."""
+def list_runs(limit: int = 20, user_id=None) -> list:
+    """Summaries of the most recent runs, newest first (only user_id's, if given)."""
     runs = {}
     for event in _read_events():
         run_id = event.get("run_id")
@@ -104,17 +104,24 @@ def list_runs(limit: int = 20) -> list:
             continue
         run = runs.setdefault(run_id, {"run_id": run_id, "llm_calls": 0, "tool_calls": 0})
         if event["type"] == "run_start":
-            run.update(goal=event.get("goal"), started=event["time"])
+            run.update(goal=event.get("goal"), started=event["time"], user_id=event.get("user_id"))
         elif event["type"] == "run_end":
             run.update(answer=event.get("answer"), duration_ms=event.get("duration_ms"))
         elif event["type"] == "llm":
             run["llm_calls"] += 1
         elif event["type"] == "tool":
             run["tool_calls"] += 1
+    if user_id is not None:
+        runs = {key: run for key, run in runs.items() if run.get("user_id") == user_id}
     newest_first = sorted(runs.values(), key=lambda run: run.get("started", ""), reverse=True)
     return newest_first[:limit]
 
 
-def get_run(run_id: str) -> list:
-    """Every event logged for one run, in order."""
-    return [event for event in _read_events() if event.get("run_id") == run_id]
+def get_run(run_id: str, user_id=None) -> list:
+    """Every event logged for one run, in order. Empty if it isn't user_id's run."""
+    events = [event for event in _read_events() if event.get("run_id") == run_id]
+    if user_id is not None:
+        start = next((event for event in events if event["type"] == "run_start"), None)
+        if start is None or start.get("user_id") != user_id:
+            return []
+    return events
