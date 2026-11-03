@@ -1,8 +1,10 @@
 import json
 import os
+import time
 import uuid
 
 from llm import generate
+from observability import end_run, observe, start_run
 from tools.registry import TOOLS, tool_schemas
 
 SYSTEM_PROMPT = (
@@ -24,11 +26,21 @@ PENDING_ACTIONS = {}
 
 
 def run_agent(goal: str) -> dict:
-    """Run the agent loop for one goal.
+    """Run the agent loop for one goal, logging the run for observability.
 
-    Returns {"answer": str, "steps": [...]} where each step records one tool call
-    (tool, arguments, result) or an error, for the trace panel.
+    Returns {"answer": str, "steps": [...], "run_id": str, "duration_ms": int}
+    where each step records one tool call (tool, arguments, result) or an error,
+    for the trace panel. The run's full log is available by its run_id.
     """
+    run_id = start_run(goal)
+    started = time.perf_counter()
+    result = _run_loop(goal)
+    duration_ms = (time.perf_counter() - started) * 1000
+    end_run(result, duration_ms)
+    return {**result, "run_id": run_id, "duration_ms": round(duration_ms)}
+
+
+def _run_loop(goal: str) -> dict:
     max_steps = int(os.environ.get("MAX_AGENT_STEPS", "6"))
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -76,6 +88,7 @@ def run_agent(goal: str) -> dict:
     }
 
 
+@observe("tool", describe_input=lambda name, arguments: {"tool": name, "arguments": arguments})
 def run_tool(name: str, arguments) -> dict:
     tool = TOOLS.get(name)
     if tool is None:

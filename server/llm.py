@@ -3,6 +3,8 @@ import os
 
 import requests
 
+from observability import observe
+
 
 def warm_up() -> dict:
     """Load the agent model into memory without asking it anything.
@@ -25,6 +27,12 @@ def warm_up() -> dict:
     return {"warm": True}
 
 
+def _describe_llm_input(messages, tools=None):
+    # Log the conversation and which tools were offered (not their full schemas).
+    return {"messages": messages, "tools": [t.get("function", {}).get("name") for t in tools or []]}
+
+
+@observe("llm", describe_input=_describe_llm_input)
 def generate(messages: list, tools: list | None = None) -> dict:
     """Ask the agent model what to do next.
 
