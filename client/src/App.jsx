@@ -1,6 +1,7 @@
 
 import { useRef, useState } from 'react'
 import './App.css'
+import ConfirmCard from './ConfirmCard'
 import LoadingState from './LoadingState'
 import TracePanel from './TracePanel'
 
@@ -12,6 +13,7 @@ function App() {
   const [error, setError] = useState('')
   const [steps, setSteps] = useState([])
   const [run, setRun] = useState(null)
+  const [pendingAction, setPendingAction] = useState(null)
   const warmedUp = useRef(false)
 
   // Load the model as soon as the user starts typing, so it's ready when they ask.
@@ -31,6 +33,7 @@ function App() {
     setSources([])
     setSteps([])
     setRun(null)
+    setPendingAction(null)
 
     try {
       const response = await fetch('/api/agent', {
@@ -50,6 +53,7 @@ function App() {
       const responseSteps = data.steps || []
       setSteps(responseSteps)
       if (data.run_id) setRun({ id: data.run_id, durationMs: data.duration_ms })
+      setPendingAction(data.pending_action || null)
 
       const searched = responseSteps.flatMap(step => [
         ...(step.result?.sources || []),
@@ -89,7 +93,9 @@ function App() {
       {answer && (
         <section className="result">
           <h2>Answer</h2>
-          <p>{answer}</p>
+          {pendingAction
+            ? <ConfirmCard key={pendingAction.id} action={pendingAction} />
+            : <p>{answer}</p>}
 
           {sources.length > 0 && (
             <>
