@@ -19,7 +19,14 @@ TOOLS = {
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "query": {"type": "string", "description": "What to look up"}
+                        "query": {
+                            "type": "string",
+                            "description": (
+                                "The user's specific question, keeping its details "
+                                "(e.g. 'When can a new Acme employee start working remotely?'), "
+                                "not a general topic like 'Acme remote work policy'"
+                            ),
+                        }
                     },
                     "required": ["query"],
                 },
