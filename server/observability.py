@@ -111,7 +111,8 @@ def list_runs(limit: int = 20) -> list:
             run["llm_calls"] += 1
         elif event["type"] == "tool":
             run["tool_calls"] += 1
-    newest_first = sorted(runs.values(), key=lambda run: run.get("started", ""), reverse=True)
+    # The log is append-only, so file order is start order (timestamps can tie).
+    newest_first = list(runs.values())[::-1]
     return newest_first[:limit]
 
 
