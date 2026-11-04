@@ -113,7 +113,8 @@ def list_runs(limit: int = 20, user_id=None) -> list:
             run["tool_calls"] += 1
     if user_id is not None:
         runs = {key: run for key, run in runs.items() if run.get("user_id") == user_id}
-    newest_first = sorted(runs.values(), key=lambda run: run.get("started", ""), reverse=True)
+    # The log is append-only, so file order is start order (timestamps can tie).
+    newest_first = list(runs.values())[::-1]
     return newest_first[:limit]
 
 
