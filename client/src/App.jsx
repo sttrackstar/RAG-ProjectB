@@ -1,4 +1,3 @@
-
 import { useRef, useState } from 'react'
 import './App.css'
 import ConfirmCard from './ConfirmCard'
@@ -92,20 +91,35 @@ function App() {
 
       {answer && (
         <section className="result">
-          <h2>Answer</h2>
-          {pendingAction
-            ? <ConfirmCard key={pendingAction.id} action={pendingAction} />
-            : <p>{answer}</p>}
+          {/* AI-generated answer */}
+          <div className="answer-card">
+            <div className="section-heading">
+              <span className="section-icon">✦</span>
+              <h2>AI Answer</h2>
+            </div>
+            {pendingAction
+              ? <ConfirmCard key={pendingAction.id} action={pendingAction} />
+              : <p className="answer-text">{answer}</p>}
+          </div>
 
+          {/* Documents and pages searched */}
           {sources.length > 0 && (
-            <>
-              <h3>Searched</h3>
-              <ul>
+            <div className="sources-card">
+              <div className="section-heading">
+                <span className="section-icon">📚</span>
+                <h2>Sources Searched</h2>
+                <span className="source-count">{sources.length}</span>
+              </div>
+
+              <ul className="sources-list">
                 {sources.map(source => (
-                  <li key={source}>{source}</li>
+                  <li className="source-item" key={source}>
+                    <span className="source-icon">📄</span>
+                    <span>{source}</span>
+                  </li>
                 ))}
               </ul>
-            </>
+            </div>
           )}
 
           <TracePanel steps={steps} />
