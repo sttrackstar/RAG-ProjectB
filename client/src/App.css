@@ -1,4 +1,3 @@
-
 #root {
   width: 100%;
   min-height: 100vh;
@@ -16,7 +15,7 @@
   color: #f8fafc;
 }
 
-.app > p {
+.app>p {
   color: #94a3b8;
   margin-bottom: 32px;
 }
@@ -140,4 +139,101 @@ button:disabled {
 
 .step-links a {
   color: #38bdf8;
+}
+
+/* Main layout: sidebar + research workspace */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Past Chats sidebar */
+.chat-history {
+  width: 260px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 24px;
+  background: #0f172a;
+  border-right: 1px solid #334155;
+  text-align: left;
+}
+
+.chat-history h2 {
+  font-size: 1.3rem;
+  color: #f8fafc;
+  margin: 0 0 20px;
+}
+
+.chat-history ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 24px;
+}
+
+.chat-history li {
+  margin-bottom: 12px;
+}
+
+/* Research Aide workspace */
+.app-layout .app {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+/* Smaller screens */
+@media (max-width: 700px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .chat-history {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #334155;
+  }
+}
+
+/* New Chat button */
+.chat-history > button {
+  width: 100%;
+  padding: 12px;
+  background: #0284c7;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Saved chat list */
+.chat-history li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Saved conversation button */
+.chat-history li button:first-child {
+  flex: 1;
+  min-width: 0;
+  padding: 10px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Delete button */
+.chat-history li button:last-child:not(:first-child) {
+  padding: 8px;
+  background: transparent;
+  color: #f87171;
+  font-size: 0.8rem;
+}
+
+.chat-history li button:last-child:not(:first-child):hover {
+  background: #450a0a;
 }

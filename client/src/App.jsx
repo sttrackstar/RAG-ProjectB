@@ -1,5 +1,5 @@
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import './App.css'
 import TracePanel from './TracePanel'
 
@@ -10,13 +10,31 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [steps, setSteps] = useState([])
+  const [activeChatId, setActiveChatId] = useState(null)
   const warmedUp = useRef(false)
+
+  const [chatHistory, setChatHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('research-aide-chats')
+      const parsed = saved ? JSON.parse(saved) : []
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  })
+
+  useEffect(() => {
+    localStorage.setItem(
+      'research-aide-chats',
+      JSON.stringify(chatHistory)
+    )
+  }, [chatHistory])
 
   // Load the model as soon as the user starts typing, so it's ready when they ask.
   function warmUpModel() {
     if (warmedUp.current) return
     warmedUp.current = true
-    fetch('/api/warmup', { method: 'POST' }).catch(() => {})
+    fetch('/api/warmup', { method: 'POST' }).catch(() => { })
   }
 
   async function handleSubmit(event) {
@@ -52,6 +70,17 @@ function App() {
         ...(step.result?.results || []).map(page => page.title),
       ])
       setSources([...new Set(searched)])
+      const newChat = {
+        id: crypto.randomUUID(),
+        question: question.trim(),
+        answer: data.answer || 'No answer returned.',
+        sources: [...new Set(searched)],
+        steps: responseSteps,
+        createdAt: new Date().toISOString(),
+      }
+
+      setChatHistory(previous => [newChat, ...previous])
+      setActiveChatId(newChat.id)
     } catch (err) {
       setError(err.message || 'Unable to contact the agent.')
     } finally {
@@ -60,45 +89,105 @@ function App() {
   }
 
   return (
-    <main className="app">
-      <h1>Research Aide</h1>
-      <p>Ask questions about your knowledge base.</p>
-
-      <form onSubmit={handleSubmit}>
-        <textarea
-          value={question}
-          onChange={event => setQuestion(event.target.value)}
-          onFocus={warmUpModel}
-          placeholder="Ask a question..."
-          rows={4}
-        />
-
-        <button type="submit" disabled={loading || !question.trim()}>
-          {loading ? 'Thinking...' : 'Ask Research Aide'}
+    <main className="app-layout">
+      <section className="chat-history">
+        <h2>Past Chats</h2>
+        <button
+          type="button"
+          onClick={() => {
+            setQuestion('')
+            setAnswer('')
+            setSources([])
+            setSteps([])
+            setError('')
+            setActiveChatId(null)
+          }}
+        >
+          + New Chat
         </button>
-      </form>
 
-      {error && <p className="error">{error}</p>}
+        {chatHistory.length === 0 ? (
+          <p>No saved chats yet.</p>
+        ) : (
+          <ul>
+            {chatHistory.map(chat => (
+              <li key={chat.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuestion(chat.question)
+                    setAnswer(chat.answer)
+                    setSources(chat.sources)
+                    setSteps(chat.steps)
+                    setError('')
+                    setActiveChatId(chat.id)
+                  }}
+                >
+                  {chat.question}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChatHistory(previous =>
+                      previous.filter(savedChat => savedChat.id !== chat.id)
+                    )
+                    if (activeChatId === chat.id) {
+                      setQuestion('')
+                      setAnswer('')
+                      setSources([])
+                      setSteps([])
+                      setError('')
+                      setActiveChatId(null)
+                    }
+                  }}
+                >
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+      <div className="app">
+        <h1>Research Aide</h1>
+        <p>Ask questions about your knowledge base.</p>
 
-      {answer && (
-        <section className="result">
-          <h2>Answer</h2>
-          <p>{answer}</p>
+        <form onSubmit={handleSubmit}>
+          <textarea
+            value={question}
+            onChange={event => setQuestion(event.target.value)}
+            onFocus={warmUpModel}
+            placeholder="Ask a question..."
+            rows={4}
+          />
 
-          {sources.length > 0 && (
-            <>
-              <h3>Searched</h3>
-              <ul>
-                {sources.map(source => (
-                  <li key={source}>{source}</li>
-                ))}
-              </ul>
-            </>
-          )}
+          <button type="submit" disabled={loading || !question.trim()}>
+            {loading ? 'Thinking...' : 'Ask Research Aide'}
+          </button>
+        </form>
 
-          <TracePanel steps={steps} />
-        </section>
-      )}
+        {error && <p className="error">{error}</p>}
+
+        {answer && (
+          <section className="result">
+            <h2>Answer</h2>
+            <p>{answer}</p>
+
+            {sources.length > 0 && (
+              <>
+                <h3>Searched</h3>
+                <ul>
+                  {sources.map(source => (
+                    <li key={source}>{source}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            <TracePanel steps={steps} />
+          </section>
+        )}
+      </div>
     </main>
   )
 }
