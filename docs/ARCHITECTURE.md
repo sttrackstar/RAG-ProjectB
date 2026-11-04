@@ -126,6 +126,7 @@ The client only ever gets an **id**. The action itself stays on the server, so a
 | **Keep the model loaded** (`keep_alive`) and **warm it up on focus** | A cold start took ~29s; warmed up, the first answer takes ~6s. |
 | **Same context window (4096) for the agent and AnythingLLM** | Different settings made Ollama reload the 5 GB model on every switch, so searches timed out (10.2s vs 1.4s per search). |
 | **JSON-lines observability log** | Simple, append-only, readable by hand, and no database needed. Each line is one event, grouped by run id. |
+| **Flask sessions + SQLite** for login | Sessions are built into Flask and SQLite needs no server; passwords are hashed with Werkzeug. Runs, conversations and pending actions are all checked against the signed-in user. |
 | **Wikipedia for web search** | Free, no API key, and returns citable titles and URLs. The `web_search(query)` interface stays the same if we switch providers. |
 
 ## Storage
@@ -134,17 +135,18 @@ The client only ever gets an **id**. The action itself stays on the server, so a
 |------|-------|-------|
 | Documents + embeddings | AnythingLLM's Docker volume (`anythingllm_storage`) | Managed by AnythingLLM |
 | Observability log | `server/data/runs.jsonl` (`OBSERVABILITY_LOG`) | Git-ignored |
+| Users + conversations | SQLite file (`DATABASE_URL`, default `server/data/app.db`) | Git-ignored; created on first start |
 | Saved notes | `server/data/notes.json` (`NOTES_FILE`) | Git-ignored |
-| Pending actions | Server memory (`agent.PENDING_ACTIONS`) | Lost on restart; should move to a database with login |
+| Pending actions | Server memory (`agent.PENDING_ACTIONS`) | Lost on restart; tagged with the user who created them |
 
 ## Testing
 
-- **Unit tests** (`server/tests/`) fake the model, AnythingLLM, Wikipedia and the file system, so they run in under a second with no services. They cover each tool, `generate()`, the loop's stop conditions, the confirmation flow, observability and the API endpoints.
+- **Unit tests** (`server/tests/`) fake the model, AnythingLLM, Wikipedia and the file system, so they run in under a second with no services. They cover each tool, `generate()`, the loop's stop conditions, the confirmation flow, observability, login and the API endpoints.
 - **CI** (`.github/workflows/ci.yml`) runs them on every pull request and every push to `main`.
 - **The evaluation set** (`server/evaluate.py`) runs 10 real tasks against the live agent and scores the success rate. Results are in [`eval.md`](./eval.md).
 
 ## Limitations
 
-- No login or per-user data yet; all users share notes, runs and pending actions.
+- Saved notes are shared by all users (one notes file).
 - Pending actions are in memory and lost on restart.
 - A local 8B model makes occasional tool-calling and answer mistakes; the input checks, step limit and eval set exist to catch them.

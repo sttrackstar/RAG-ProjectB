@@ -21,6 +21,7 @@ A new team member trying to answer a question (*"When can I start working remote
 - **Asks before acting.** Saving a note pauses on a *Needs your confirmation* card. Nothing is saved until the user clicks **Confirm**, and each approval works only once.
 - **Stays honest.** Answers come only from tool results; if they don't contain the answer, it says the documents don't mention it.
 - **Is observable.** Every model and tool call is logged with its inputs, output and timing, and each answer links to its full log.
+- **Keeps each user's work private.** Sign up and log in; your questions, answers and run logs are saved in a database and only you can see them.
 - **Is evaluated.** A 10-task evaluation set measures the success rate (currently **30/30**; see [Evaluation](#evaluation)).
 
 <!-- [placeholder] Add annotated screenshots to docs/images/ and link them here:
@@ -32,6 +33,7 @@ A new team member trying to answer a question (*"When can I start working remote
 flowchart LR
     U[User] --> UI[React app]
     UI -->|POST /api/agent| API[Flask API]
+    API --> DB[(SQLite<br/>users, conversations)]
     API --> LOOP[Agent loop<br/>max 6 steps]
     LOOP <-->|generate| LLM[Llama 3.1 8B<br/>via Ollama]
     LOOP --> SK[search_knowledge]
@@ -53,6 +55,7 @@ A question goes from the React app to the Flask API. The **agent loop** asks the
 | Agent model | **Llama 3.1 8B** via **Ollama** | Free, local, private, and supports tool calling. Less reliable than hosted models, so we added input checks, a step limit and an eval set |
 | Web search | **Wikipedia API** | Free and needs no API key; returns titles, URLs and summaries we can cite |
 | Backend | **Python 3.12 + Flask** | Hosts the agent loop, the tools, and the observability log |
+| Auth + storage | **Flask sessions + SQLite** | Passwords hashed with Werkzeug; SQLite needs no server and survives restarts |
 | Frontend | **React 19 + Vite** | Chat UI with the trace panel and confirmation card |
 | Tests / CI | **pytest** + **GitHub Actions** | Every pull request runs the backend tests; the model and services are faked, so CI needs no live model |
 
@@ -93,7 +96,7 @@ More detail: [`docs/anythingllm-setup.md`](./docs/anythingllm-setup.md).
 cp .env.example .env        # Windows PowerShell: copy .env.example .env
 ```
 
-Paste your API key into `.env` as `ANYTHINGLLM_API_KEY`. The other defaults work as they are.
+Paste your API key into `.env` as `ANYTHINGLLM_API_KEY`, and set `SECRET_KEY` to any long random string (it signs login sessions). The other defaults work as they are; the database file is created on first start.
 
 ### 4. Start the backend (terminal 1)
 
@@ -113,7 +116,7 @@ npm install
 npm run dev                 # http://localhost:5173
 ```
 
-Open **http://localhost:5173** and try:
+Open **http://localhost:5173**, create an account, and try:
 
 - *How much does Nimbus Pro cost?* — answered from the internal docs
 - *Who created the Python programming language?* — answered from the web
@@ -136,12 +139,19 @@ Open **http://localhost:5173** and try:
 | Method | Path | Purpose |
 |--------|------|---------|
 | `GET` | `/health` | Health check |
+| `POST` | `/api/signup` | Create an account and log in: `{"username", "password"}` (3–30 letters, digits or `_`; password 8+ characters) |
+| `POST` | `/api/login` | Log in: `{"username", "password"}` |
+| `POST` | `/api/logout` | Log out |
+| `GET` | `/api/me` | The signed-in user, or `401` |
+| `GET` | `/api/conversations` | The signed-in user's saved questions, answers and steps, newest first |
 | `POST` | `/api/agent` | Ask a question: `{"question": "..."}` → `{answer, steps, run_id, duration_ms, pending_action?}` |
 | `POST` | `/api/warmup` | Load the model in the background (called when the question box gets focus) |
 | `POST` | `/api/actions/<id>/confirm` | Run an action the agent paused on (once only) |
 | `POST` | `/api/actions/<id>/cancel` | Discard it |
-| `GET` | `/api/runs` | Recent runs: question, answer, total time, number of model and tool calls |
+| `GET` | `/api/runs` | Your recent runs: question, answer, total time, number of model and tool calls |
 | `GET` | `/api/runs/<run_id>` | Every logged model and tool call for one run |
+
+Every `/api/` endpoint except signup, login, logout, me and warmup requires login, and only returns the signed-in user's data; confirming someone else's pending action returns `404`.
 
 ## Testing and evaluation
 
@@ -174,6 +184,7 @@ The biggest fix came from the trace: the agent was rewriting *"When can a new Ac
 - **Input checks:** unknown tools, wrong argument names and empty or oversized inputs are rejected and reported back to the model.
 - **Confirmation:** tools marked `requires_confirmation` pause and return a pending action stored on the server; it runs only when the user confirms, and only once.
 - **Prompt-injection defense:** the system prompt tells the model that tool results are data, never instructions to follow.
+- **Authentication:** passwords are hashed, never stored; the same error for a wrong username or password; each user sees only their own conversations, runs and pending actions.
 - **No secrets in the repo:** keys live in `.env`, which is git-ignored.
 
 ## Project structure
@@ -181,9 +192,11 @@ The biggest fix came from the trace: the agent was rewriting *"When can a new Ac
 ```
 .
 ├── client/                  React app (Vite)
-│   └── src/                 App, TracePanel, ConfirmCard, LoadingState
+│   └── src/                 App, TracePanel, ConfirmCard, LoadingState, Login, Signup
 ├── server/                  Flask API
 │   ├── app.py               HTTP endpoints
+│   ├── auth.py              signup, login, logout, login_required
+│   ├── db.py                SQLite: users and conversations
 │   ├── agent.py             the agent loop, confirmation and system prompt
 │   ├── llm.py               generate(): the one place that calls the model
 │   ├── observability.py     @observe logging and the run viewer
@@ -197,8 +210,8 @@ The biggest fix came from the trace: the agent was rewriting *"When can a new Ac
 
 ## Known limitations and next steps
 
-- **Login and per-user conversations** are not finished: the signup and login forms exist, but not the backend or database.
-- Pending actions and notes live in server memory and a local file; they should move to a database with login.
+- Pending actions live in server memory (lost on restart) and notes in a local file; they could move to the database.
+- SQLite suits one server; a real deployment would use Postgres.
 - The local 8B model's answers vary between runs (the web-search task scored 1/3 and 3/3 with the same settings), which is why the eval runs every task 3 times.
 - Possible next steps: document upload from the UI, a readable run-viewer page, a retry when the model sends malformed tool arguments, and streaming each step live.
 
