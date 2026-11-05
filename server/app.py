@@ -51,8 +51,10 @@ def create_app():
         user_id = current_user_id()
         result = run_agent(question.strip(), user_id=user_id)
         if result.get("pending_action"):
+            # Not saved to history: the action can't be confirmed from a reopened conversation.
             ACTION_OWNERS[result["pending_action"]["id"]] = user_id
-        result["conversation_id"] = save_conversation(user_id, question.strip(), result)
+        else:
+            result["conversation_id"] = save_conversation(user_id, question.strip(), result)
 
         return jsonify(result), 200
 

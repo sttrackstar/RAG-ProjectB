@@ -1,4 +1,5 @@
 import agent
+import app as app_module
 import db
 from app import app
 from tests.helpers import signed_up_client
@@ -73,6 +74,19 @@ def test_conversations_are_saved_and_private(monkeypatch, client):
     assert mine[0]["answer"] == "Hi"
     assert mine[0]["steps"] == []
     assert mine[0]["run_id"]
+
+
+def test_pending_confirmations_are_not_saved_to_history(monkeypatch, client):
+    pending = {"answer": "Please confirm.", "steps": [], "run_id": "r1", "duration_ms": 5,
+               "pending_action": {"id": "abc123", "tool": "save_note", "arguments": {}}}
+    monkeypatch.setattr(app_module, "run_agent", lambda goal, user_id=None: dict(pending))
+
+    response = client.post("/api/agent", json={"question": "Save a note"})
+
+    assert response.get_json()["pending_action"]["id"] == "abc123"
+    assert "conversation_id" not in response.get_json()
+    assert client.get("/api/conversations").get_json() == []
+    assert app_module.ACTION_OWNERS["abc123"] == 1
 
 
 def test_run_logs_are_private(monkeypatch, client):

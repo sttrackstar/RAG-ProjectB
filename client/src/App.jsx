@@ -19,6 +19,7 @@ function App() {
   const [user, setUser] = useState(undefined) // undefined = still checking, null = logged out
   const [authMode, setAuthMode] = useState('login')
   const [history, setHistory] = useState([])
+  const [historyError, setHistoryError] = useState('')
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
   const [sources, setSources] = useState([])
@@ -37,21 +38,23 @@ function App() {
       .catch(() => setUser(null))
   }, [])
 
-  // Load this user's saved conversations whenever someone logs in.
-  useEffect(() => {
-    if (!user) return
-    fetch('/api/conversations')
-      .then(response => (response.ok ? response.json() : []))
-      .then(setHistory)
-      .catch(() => setHistory([]))
-  }, [user])
-
   function refreshHistory() {
     fetch('/api/conversations')
-      .then(response => (response.ok ? response.json() : []))
-      .then(setHistory)
-      .catch(() => {})
+      .then(response => {
+        if (!response.ok) throw new Error()
+        return response.json()
+      })
+      .then(conversations => {
+        setHistory(conversations)
+        setHistoryError('')
+      })
+      .catch(() => setHistoryError("Couldn't load your recent questions."))
   }
+
+  // Load this user's saved conversations whenever someone logs in.
+  useEffect(() => {
+    if (user) refreshHistory()
+  }, [user])
 
   function clearAnswer() {
     setError('')
@@ -63,9 +66,14 @@ function App() {
   }
 
   async function logout() {
-    await fetch('/api/logout', { method: 'POST' }).catch(() => {})
+    const response = await fetch('/api/logout', { method: 'POST' }).catch(() => null)
+    if (!response?.ok) {
+      setError("Couldn't log out. Please try again.")
+      return
+    }
     clearAnswer()
     setHistory([])
+    setHistoryError('')
     setQuestion('')
     setAuthMode('login')
     setUser(null)
@@ -207,6 +215,8 @@ function App() {
           )}
         </section>
       )}
+
+      {historyError && <p className="error">{historyError}</p>}
 
       {history.length > 0 && (
         <section className="history">
