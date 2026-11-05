@@ -222,3 +222,213 @@ button:disabled {
 .step-links a {
   color: #38bdf8;
 }
+
+.app-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  color: #94a3b8;
+}
+
+.app-header button {
+  align-self: center;
+  padding: 6px 14px;
+}
+
+.auth form div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.auth label {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.auth input {
+  padding: 12px;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #1e293b;
+  color: #f8fafc;
+  font: inherit;
+}
+
+.auth input:focus {
+  outline: 2px solid #38bdf8;
+}
+
+.auth form p {
+  color: #f87171;
+}
+
+.link-button {
+  padding: 0;
+  background: none;
+  color: #38bdf8;
+  text-decoration: underline;
+  font-weight: 400;
+}
+
+.link-button:hover:not(:disabled) {
+  background: none;
+}
+
+.history {
+  margin-top: 36px;
+  text-align: left;
+}
+
+.history ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-item {
+  width: 100%;
+  text-align: left;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  font-weight: 400;
+}
+
+.history-item:hover:not(:disabled) {
+  background: #273449;
+}
+
+.confirm-card {
+  margin-top: 16px;
+  padding: 20px;
+  text-align: left;
+  border: 1px solid #334155;
+  border-left: 4px solid #f59e0b;
+  border-radius: 10px;
+  background: #0f172a;
+}
+
+.confirm-card h3 {
+  margin: 0 0 8px;
+  color: #f59e0b;
+}
+
+.confirm-args {
+  margin: 12px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.confirm-args dt {
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.confirm-args dd {
+  margin: 0;
+  color: #f8fafc;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.button-secondary {
+  background: transparent;
+  border: 1px solid #475569;
+  color: #f8fafc;
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: #1e293b;
+}
+
+.confirm-outcome {
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.confirm-confirmed {
+  border-left-color: #22c55e;
+}
+
+.confirm-cancelled {
+  border-left-color: #64748b;
+}
+
+.confirm-error {
+  border-left-color: #f87171;
+}
+
+.run-meta {
+  margin-top: 20px;
+  text-align: left;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.run-meta a {
+  color: #38bdf8;
+}
+
+.loading {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loading-status {
+  color: #38bdf8;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.skeleton {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #273449 25%, #3b4a63 50%, #273449 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-heading {
+  width: 30%;
+  height: 24px;
+}
+
+.skeleton-line {
+  height: 16px;
+}
+
+.skeleton-line-short {
+  width: 65%;
+}
+
+.skeleton-step {
+  height: 64px;
+  margin-top: 8px;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
