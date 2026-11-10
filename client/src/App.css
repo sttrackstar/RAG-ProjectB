@@ -1,4 +1,3 @@
-
 #root {
   width: 100%;
   min-height: 100vh;
@@ -16,7 +15,7 @@
   color: #f8fafc;
 }
 
-.app > p {
+.app>p {
   color: #94a3b8;
   margin-bottom: 32px;
 }
@@ -223,6 +222,94 @@ button:disabled {
   color: #38bdf8;
 }
 
+
+/* Main layout: sidebar + research workspace */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Past Chats sidebar */
+.chat-history {
+  width: 260px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 24px;
+  background: #0f172a;
+  border-right: 1px solid #334155;
+  text-align: left;
+}
+
+.chat-history h2 {
+  font-size: 1.3rem;
+  color: #f8fafc;
+  margin: 0 0 20px;
+}
+
+.chat-history ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 24px;
+}
+
+.chat-history li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.new-chat-button {
+  width: 100%;
+  padding: 12px;
+  background: #0284c7;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.history-chat-button {
+  flex: 1;
+  min-width: 0;
+  padding: 10px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-chat-button:hover:not(:disabled) {
+  background: #273449;
+}
+
+.active-chat .history-chat-button {
+  border-color: #38bdf8;
+  background: #1e3a5f;
+}
+
+.delete-chat-button {
+  padding: 8px;
+  background: transparent;
+  color: #f87171;
+  font-size: 0.8rem;
+}
+
+.delete-chat-button:hover:not(:disabled) {
+  background: #450a0a;
+}
+
+/* Research Aide workspace */
+.app-layout .app {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+/* Authentication and logout */
 .app-header {
   display: flex;
   justify-content: flex-end;
@@ -277,32 +364,7 @@ button:disabled {
   background: none;
 }
 
-.history {
-  margin-top: 36px;
-  text-align: left;
-}
-
-.history ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.history-item {
-  width: 100%;
-  text-align: left;
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #f8fafc;
-  font-weight: 400;
-}
-
-.history-item:hover:not(:disabled) {
-  background: #273449;
-}
-
+/* Confirmation controls */
 .confirm-card {
   margin-top: 16px;
   padding: 20px;
@@ -369,6 +431,7 @@ button:disabled {
   border-left-color: #f87171;
 }
 
+/* Agent run information */
 .run-meta {
   margin-top: 20px;
   text-align: left;
@@ -380,6 +443,7 @@ button:disabled {
   color: #38bdf8;
 }
 
+/* Loading animation */
 .loading {
   text-align: left;
   display: flex;
@@ -395,7 +459,12 @@ button:disabled {
 
 .skeleton {
   border-radius: 8px;
-  background: linear-gradient(90deg, #273449 25%, #3b4a63 50%, #273449 75%);
+  background: linear-gradient(
+    90deg,
+    #273449 25%,
+    #3b4a63 50%,
+    #273449 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }
@@ -430,5 +499,23 @@ button:disabled {
 @media (prefers-reduced-motion: reduce) {
   .skeleton {
     animation: none;
+  }
+}
+
+/* Responsive layout */
+@media (max-width: 700px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .chat-history {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #334155;
+  }
+
+  .app-layout .app {
+    width: 100%;
+    padding: 32px 20px;
   }
 }

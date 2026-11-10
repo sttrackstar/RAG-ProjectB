@@ -93,3 +93,15 @@ def list_conversations(user_id: int, limit: int = 20) -> list:
         {**{key: row[key] for key in row.keys() if key != "steps_json"}, "steps": json.loads(row["steps_json"])}
         for row in rows
     ]
+
+def delete_conversation(user_id: int, conversation_id: int) -> bool:
+    db = get_db()
+
+    cursor = db.execute(
+        "DELETE FROM conversations WHERE id = ? AND user_id = ?",
+        (conversation_id, user_id),
+    )
+
+    db.commit()
+
+    return cursor.rowcount > 0

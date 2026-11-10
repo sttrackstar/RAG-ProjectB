@@ -10,7 +10,7 @@ import agent
 from agent import cancel_action, confirm_action, run_agent
 from auth import bp as auth_bp
 from auth import current_user_id, login_required
-from db import close_db, init_db, list_conversations, save_conversation
+from db import close_db, delete_conversation, init_db, list_conversations, save_conversation
 from llm import warm_up
 from observability import get_run, list_runs
 
@@ -63,6 +63,18 @@ def create_app():
     def conversations():
         limit = request.args.get("limit", default=20, type=int)
         return jsonify(list_conversations(current_user_id(), limit=max(1, min(limit, 100))))
+
+
+    @app.route("/api/conversations/<int:conversation_id>", methods=["DELETE"])
+    @login_required
+    def remove_conversation(conversation_id):
+        deleted = delete_conversation(current_user_id(), conversation_id)
+
+        if not deleted:
+            return jsonify({"error": "Conversation not found"}), 404
+
+        return jsonify({"message": "Conversation deleted"}), 200
+
 
     @app.route("/api/warmup", methods=["POST"])
     def warmup():
