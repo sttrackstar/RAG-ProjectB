@@ -1,0 +1,38 @@
+services:
+  backend:
+    build: ./server
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite:////app/data/app.db
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      ANYTHINGLLM_BASE_URL: http://anythingllm:3001
+    volumes:
+      - backend_data:/app/data
+    depends_on:
+      - anythingllm
+
+  frontend:
+    build: ./client
+    ports:
+      - "5173:5173"
+    environment:
+      API_PROXY_TARGET: http://backend:5000
+    depends_on:
+      - backend
+
+  anythingllm:
+    image: mintplexlabs/anythingllm
+    ports:
+      - "3001:3001"
+    environment:
+      STORAGE_DIR: /app/server/storage
+    volumes:
+      - anythingllm_storage:/app/server/storage
+
+volumes:
+  backend_data:
+  anythingllm_storage:
+    external: true

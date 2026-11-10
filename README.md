@@ -123,6 +123,61 @@ Open **http://localhost:5173**, create an account, and try:
 - *What is Acme's parental leave policy?* — not in the docs, so it says it doesn't know
 - *Save a note titled "Nimbus" with the content "Pro is $8/month"* — pauses for your confirmation
 
+
+### Alternative: Run with Docker Compose
+
+Docker Compose starts React, Flask, and AnythingLLM together.
+Ollama must be installed and running separately on the host.
+
+1. Install Docker Desktop and Ollama.
+2. Download the model:
+
+   ```bash
+   ollama pull llama3.1:8b
+   ```
+
+3. From the project root, configure the environment:
+
+   ```bash
+   cp .env.example .env
+   docker volume create anythingllm_storage
+   ```
+
+   Set SECRET_KEY in .env to a secure random value.
+
+4. Start the application:
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+5. Open http://localhost:3001 and configure AnythingLLM:
+   - Provider: Ollama
+   - Base URL: http://host.docker.internal:11434
+   - Model: llama3.1:8b
+   - Workspace: apprentice-kb
+   - Upload and embed the sample-data documents.
+   - Set workspace chat mode to Query.
+   - Generate a Developer API key and add it to .env as ANYTHINGLLM_API_KEY.
+
+6. After updating .env, restart the backend:
+
+   ```bash
+   docker compose up -d --force-recreate backend
+   ```
+
+7. Open http://localhost:5173 to use Research Aide.
+
+To stop the application:
+
+   ```bash
+   docker compose down
+   ```
+
+This preserves the SQLite and AnythingLLM volumes.
+Do not use docker compose down -v unless you intend to delete data.
+
+
 ### Common problems
 
 | Symptom | Fix |
